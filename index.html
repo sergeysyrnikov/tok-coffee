@@ -39,9 +39,17 @@
         .vb-q1k h1,.vb-q1k h2,.vb-q1k h3{ font-family:var(--t-headline-font, Georgia, "Times New Roman", serif); font-weight:400; text-wrap:balance; }
     
         .vb-q1k__header{
-          position:absolute; inset:0 0 auto 0; z-index:20;
+          position:fixed; inset:0 0 auto 0; z-index:60;
           display:flex; align-items:center; justify-content:space-between; gap:24px;
           padding:26px clamp(20px,5vw,72px);
+          transition:background .3s ease, box-shadow .3s ease;
+        }
+        /* подложка после прокрутки, чтобы меню читалось на светлом фоне */
+        .vb-q1k__header.is-scrolled{
+          background:rgba(26,16,10,.9);
+          backdrop-filter:blur(8px);
+          -webkit-backdrop-filter:blur(8px);
+          box-shadow:0 6px 24px rgba(26,16,10,.18);
         }
         .vb-q1k__logo{
           font-family:var(--t-headline-font, Georgia, serif);
@@ -73,6 +81,7 @@
         .vb-q1k__burger[aria-expanded="true"] span{ background:transparent; }
         .vb-q1k__burger[aria-expanded="true"] span::before{ transform:translateY(5.5px) rotate(45deg); }
         .vb-q1k__burger[aria-expanded="true"] span::after{ transform:translateY(-5.5px) rotate(-45deg); }
+        .vb-q1k__burger:focus-visible{ outline:2px solid var(--caramel-hi); outline-offset:3px; }
     
         .vb-q1k__heroimg{ position:absolute; inset:0; overflow:hidden; z-index:0; }
         .vb-q1k__heroimg img{
@@ -142,7 +151,7 @@
           .vb-q1k__scroll{ justify-content:flex-end; }
         }
         @media (max-width: 640px){
-          .vb-q1k__hero{ padding:130px 24px 30px; min-height:92svh; }
+          .vb-q1k__hero{ padding:130px 24px 30px; min-height:100svh; min-height:100dvh; }
           .vb-q1k__herobody{ max-width:100%; display:flex; flex-direction:column; align-items:center; text-align:center; }
           .vb-q1k__eyebrow{ justify-content:center; }
           .vb-q1k__eyebrow::before{ display:none; }
@@ -608,6 +617,7 @@
         }
         .reviews-track {
           display: flex;
+          align-items: stretch;
           gap: 24px;
           overflow-x: auto;
           overscroll-behavior-x: contain;
@@ -621,13 +631,14 @@
         .reviews-track.is-dragging { cursor: grabbing; scroll-snap-type: none; }
         .reviews-track::-webkit-scrollbar { display: none; }
 
+        /* карточки: одинаковая ширина, 3 обычных или широкая + 1 в ряд */
         .reviews-track > * {
           flex: 0 0 auto;
           scroll-snap-align: start;
           width: calc((100% - 48px) / 3);
         }
         .reviews-track > .vb-q1k__revcard--wide {
-          width: calc((100% - 48px) / 3);
+          width: calc(((100% - 48px) / 3) * 2 + 24px);
         }
 
         /* стрелки — жирные шевроны по бокам, по вертикальному центру */
@@ -647,21 +658,14 @@
         .rev-arrow[data-dir="1"]{ right:-58px; }
         .rev-arrow:hover{ color:var(--caramel); transform:translateY(-50%) scale(1.12); }
         .rev-arrow[disabled]{ opacity:0; pointer-events:none; }
-        /* карточки: одинаковая ширина, 3 в ряд, видны целиком до стрелок */
-        .reviews-track > * {
-          flex: 0 0 auto;
-          scroll-snap-align: start;
-          width: calc((100% - 48px) / 3);
-        }
-        .reviews-track > .vb-q1k__revcard--wide {
-          width: calc((100% - 48px) / 3);
-        }
         @media (max-width:640px){
           .rev-arrow{ width:44px; height:52px; }
           .rev-arrow svg{ width:26px; height:26px; }
           .rev-arrow[data-dir="-1"]{ left:-10px; }
           .rev-arrow[data-dir="1"]{ right:-10px; }
-          .reviews-track > * { width: 86%; }
+          .reviews-track{ gap:16px; }
+          .reviews-track > * { flex-basis:86%; width:86%; }
+          .reviews-track > .vb-q1k__revcard--wide { flex-basis:86%; width:86%; }
         }
       </style>
     
@@ -1067,6 +1071,14 @@
       var header = root.querySelector('.vb-q1k__header');
       var burger = root.querySelector('.vb-q1k__burger');
       var nav = root.getElementById('vb-q1k-nav');
+
+      /* хедер всегда доступен: подложка при прокрутке */
+      var onScroll = function () {
+        if (header) { header.classList.toggle('is-scrolled', window.scrollY > 40); }
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
       if (header && burger && nav) {
         var setNav = function (open) {
           header.classList.toggle('vb-q1k--navopen', open);
