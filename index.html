@@ -1274,19 +1274,33 @@
     
         form.addEventListener('submit', function (e) {
           e.preventDefault();
-          window.tildaForm.hideErrors(form);
-          var errors = window.tildaForm.validate(form);
-          var hasErrors = window.tildaForm.showErrors(form, errors);
+
+          /* ---- валидация (без Tilda runtime) ---- */
+          var errors = [];
+          form.querySelectorAll('[required]').forEach(function (field) {
+            var ok = true;
+            if (field.type === 'checkbox') { ok = field.checked; }
+            else if (field.type === 'email') { ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim()); }
+            else { ok = field.value.trim().length > 0; }
+            if (!ok) { errors.push(field); }
+          });
+
           form.querySelectorAll('.vb-q1k__ig').forEach(function (box) {
-            box.classList.toggle('is-error', !!box.querySelector('.t-input-error:not(:empty)'));
+            var field = box.querySelector('input, textarea, select');
+            box.classList.toggle('is-error', field ? errors.indexOf(field) !== -1 : false);
           });
-          if (hasErrors) { return; }
+          form.querySelectorAll('.vb-q1k__check').forEach(function (box) {
+            var field = box.querySelector('input[type="checkbox"]');
+            box.classList.toggle('is-error', field ? errors.indexOf(field) !== -1 : false);
+          });
+
+          if (errors.length) {
+            var first = errors[0];
+            first.focus({ preventScroll: false });
+            return;
+          }
+
           if (submitBtn) { submitBtn.disabled = true; }
-          window.t_forms__initBtnClick({
-            target: submitBtn,
-            srcElement: submitBtn,
-            preventDefault: function () {}
-          });
           window.setTimeout(function () {
             form.querySelectorAll('.vb-q1k__ig, .vb-q1k__check, .vb-q1k__actions').forEach(function (el) {
               el.style.display = 'none';
