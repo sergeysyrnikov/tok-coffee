@@ -44,12 +44,10 @@
           padding:26px clamp(20px,5vw,72px);
           transition:background .3s ease, box-shadow .3s ease;
         }
-        /* подложка после прокрутки, чтобы меню читалось на светлом фоне */
+        /* при прокрутке фон прозрачный, чтобы не перекрывать контент */
         .vb-q1k__header.is-scrolled{
-          background:rgba(26,16,10,.9);
-          backdrop-filter:blur(8px);
-          -webkit-backdrop-filter:blur(8px);
-          box-shadow:0 6px 24px rgba(26,16,10,.18);
+          background:transparent;
+          box-shadow:none;
         }
         .vb-q1k__logo{
           font-family:var(--t-headline-font, Georgia, serif);
@@ -832,6 +830,7 @@
         .vb-q1k__form .t-input-error{ display:none; font-size:13px; color:#E8A08A; }
         .vb-q1k__ig.is-error input, .vb-q1k__ig.is-error select{ border-bottom-color:#E8A08A; }
         .vb-q1k__ig.is-error .t-input-error{ display:block; }
+        .vb-q1k__check.is-error label{ color:#E8A08A; }
         .vb-q1k__check{ grid-column:1 / -1; display:flex; gap:11px; align-items:flex-start; }
         .vb-q1k__check input{ width:17px; height:17px; margin:3px 0 0; accent-color:var(--caramel); flex:none; }
         .vb-q1k__check label{ font-size:13.5px; line-height:1.6; color:var(--muted-l); letter-spacing:0; text-transform:none; }
@@ -1316,26 +1315,47 @@
 
           /* ---- валидация (без Tilda runtime) ---- */
           var errors = [];
-          form.querySelectorAll('[required]').forEach(function (field) {
-            var ok = true;
-            if (field.type === 'checkbox') { ok = field.checked; }
-            else if (field.type === 'email') { ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim()); }
-            else { ok = field.value.trim().length > 0; }
+          form.querySelectorAll('[data-tilda-req]').forEach(function (field) {
+            var box = field.closest('.vb-q1k__ig, .vb-q1k__check');
+            var msg = box ? box.querySelector('.t-input-error') : null;
+            var ok = true, text = '';
+
+            if (field.type === 'checkbox') {
+              ok = field.checked;
+              text = 'Нужно согласие на обработку данных';
+            } else if (field.name === 'Phone') {
+              ok = field.value.replace(/\D/g, '').length === 11;
+              text = ok ? '' : 'Введите телефон полностью: +7 (999) 999-99-99';
+            } else if (field.name === 'Name') {
+              ok = field.value.trim().length >= 2;
+              text = ok ? '' : 'Введите имя (минимум 2 символа)';
+            } else {
+              ok = field.value.trim().length > 0;
+              text = 'Обязательное поле';
+            }
+
+            if (msg) { msg.textContent = text; }
+            if (box) { box.classList.toggle('is-error', !ok); }
             if (!ok) { errors.push(field); }
           });
 
-          form.querySelectorAll('.vb-q1k__ig').forEach(function (box) {
-            var field = box.querySelector('input, textarea, select');
-            box.classList.toggle('is-error', field ? errors.indexOf(field) !== -1 : false);
-          });
-          form.querySelectorAll('.vb-q1k__check').forEach(function (box) {
-            var field = box.querySelector('input[type="checkbox"]');
-            box.classList.toggle('is-error', field ? errors.indexOf(field) !== -1 : false);
-          });
+          /* очистка ошибок при исправлении */
+          if (!form._errCleanup) {
+            form._errCleanup = true;
+            form.addEventListener('input', function (e) {
+              var box = e.target.closest('.vb-q1k__ig, .vb-q1k__check');
+              if (box && box.classList.contains('is-error')) {
+                box.classList.remove('is-error');
+                var msg = box.querySelector('.t-input-error');
+                if (msg) { msg.textContent = ''; }
+              }
+            }, true);
+          }
 
           if (errors.length) {
             var first = errors[0];
             first.focus({ preventScroll: false });
+            if (first.scrollIntoView) { first.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); }
             return;
           }
 
