@@ -42,17 +42,30 @@
           position:fixed; inset:0 0 auto 0; z-index:60;
           display:flex; align-items:center; justify-content:space-between; gap:24px;
           padding:26px clamp(20px,5vw,72px);
-          transition:background .3s ease, box-shadow .3s ease;
+          transition:transform .35s ease, opacity .35s ease;
         }
-        /* при прокрутке фон прозрачный, чтобы не перекрывать контент */
-        .vb-q1k__header.is-scrolled{
-          background:transparent;
-          box-shadow:none;
+        /* при скролле на мобильных прячем только логотип, бургер остаётся */
+        @media (max-width: 900px){
+          .vb-q1k__header.is-hidden{
+            background:transparent;
+            pointer-events:none;
+          }
+          .vb-q1k__header.is-hidden .vb-q1k__logo{
+            opacity:0; pointer-events:none;
+          }
+          .vb-q1k__header.is-hidden .vb-q1k__nav{
+            opacity:0; visibility:hidden; transform:translateY(-8px); pointer-events:none;
+          }
+          .vb-q1k__header.is-hidden .vb-q1k__burger{
+            opacity:1; visibility:visible; pointer-events:auto;
+            background:rgba(26,16,10,.35);
+          }
         }
         .vb-q1k__logo{
           font-family:var(--t-headline-font, Georgia, serif);
           font-size:23px; letter-spacing:.2em; color:var(--bone);
           text-decoration:none; line-height:1; display:inline-flex; align-items:baseline; gap:9px;
+          transition:opacity .3s ease;
         }
         .vb-q1k__logo::after{
           content:""; width:7px; height:7px; border-radius:50%;
@@ -1071,12 +1084,12 @@
       var burger = root.querySelector('.vb-q1k__burger');
       var nav = root.getElementById('vb-q1k-nav');
 
-      /* хедер всегда доступен: подложка при прокрутке */
-      var onScroll = function () {
-        if (header) { header.classList.toggle('is-scrolled', window.scrollY > 40); }
+      /* хедер виден только в исходном положении, скрывается при скролле */
+      var onHeaderScroll = function () {
+        if (header) { header.classList.toggle('is-hidden', window.scrollY > 20); }
       };
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll();
+      window.addEventListener('scroll', onHeaderScroll, { passive: true });
+      onHeaderScroll();
 
       if (header && burger && nav) {
         var setNav = function (open) {
