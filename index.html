@@ -3,6 +3,9 @@
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>
     .vb-q1k, .vb-q1k * { box-sizing: border-box; }
     .vb-q1k input, .vb-q1k textarea, .vb-q1k select { font: inherit; }
+    html, body { margin:0; padding:0; }
+    body { background:#F3EDE1; }
+    .vb-q1k { width:100%; max-width:100%; }
     </style>
     
     <!-- ============ ОБЛОЖКА ============ -->
@@ -139,9 +142,15 @@
           .vb-q1k__scroll{ justify-content:flex-end; }
         }
         @media (max-width: 640px){
-          .vb-q1k__hero{ padding-top:130px; min-height:92svh; }
+          .vb-q1k__hero{ padding:130px 24px 30px; min-height:92svh; }
+          .vb-q1k__herobody{ max-width:100%; display:flex; flex-direction:column; align-items:center; text-align:center; }
+          .vb-q1k__eyebrow{ justify-content:center; }
+          .vb-q1k__eyebrow::before{ display:none; }
           .vb-q1k__title{ font-size:clamp(3rem, 16vw, 4.6rem); }
-          .vb-q1k__cta{ gap:14px; }
+          .vb-q1k__lead{ margin-left:auto; margin-right:auto; }
+          .vb-q1k__cta{ justify-content:center; gap:14px; }
+          .vb-q1k__scroll{ justify-content:center; }
+          .vb-q1k__header{ padding:20px 24px; }
         }
         @media (prefers-reduced-motion: reduce){
           .vb-q1k__heroimg img{ animation:none; }
